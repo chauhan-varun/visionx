@@ -1,1 +1,217 @@
-@import "tailwindcss";
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #ffffff;
+  --color-text: #1d1d1f;
+  --color-text-secondary: #86868b;
+  --color-accent: #0071e3;
+  --color-accent-hover: #0077ed;
+  --color-border: #d2d2d7;
+  --color-card: #f5f5f7;
+  --color-error: #ff3b30;
+  --color-success: #34c759;
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.fade-enter {
+  opacity: 0;
+}
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+/* Custom apple-inspired button */
+.btn-apple {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-apple:hover {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+/* Form elements with Apple-like styling */
+.form-input {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 15px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+
+/* Card with subtle shadow */
+.apple-card {
+  background-color: var(--color-background);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.apple-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Dashboard card */
+.stat-card {
+  background: linear-gradient(145deg, #ffffff, #f5f5f7);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Animated progress bar */
+.progress-bar {
+  height: 6px;
+  background-color: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--color-accent);
+  transition: width 0.5s ease;
+}
+
+/* Table styling */
+.apple-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.apple-table th {
+  text-align: left;
+  font-weight: 500;
+  padding: 12px 16px;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.apple-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.apple-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.apple-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.success {
+  background-color: rgba(52, 199, 89, 0.1);
+  color: var(--color-success);
+}
+
+.status-badge.pending {
+  background-color: rgba(255, 204, 0, 0.1);
+  color: #ff9500;
+}
+
+.status-badge.error {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: var(--color-error);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease forwards;
+}
+
+/* For staggered animations */
+.stagger-item {
+  opacity: 0;
+  animation: slideUp 0.3s ease forwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.1s; }
+.stagger-item:nth-child(2) { animation-delay: 0.2s; }
+.stagger-item:nth-child(3) { animation-delay: 0.3s; }
+.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+.stagger-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Sidebar active item indicator */
+.sidebar-item.active {
+  position: relative;
+}
+
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 0 3px 3px 0;
+}

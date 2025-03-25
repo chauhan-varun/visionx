@@ -93,3 +93,79 @@ export const getMyOrders = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// @desc    Get all orders (admin only)
+// @route   GET /api/admin/orders
+// @access  Private/Admin
+export const getOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({}).populate('user', 'id name email');
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Get all orders error:', error);
+    res.status(500).json({ message: 'Server error while retrieving orders' });
+  }
+};
+
+// @desc    Get order by ID (admin only)
+// @route   GET /api/admin/orders/:id
+// @access  Private/Admin
+export const getOrderByIdAdmin = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json(order);
+  } catch (error) {
+    console.error('Get order by ID (admin) error:', error);
+    res.status(500).json({ message: 'Server error while retrieving order' });
+  }
+};
+
+// @desc    Update order status (admin only)
+// @route   PUT /api/admin/orders/:id/status
+// @access  Private/Admin
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = req.body.status || order.status;
+    order.isDelivered = req.body.isDelivered || order.isDelivered;
+    
+    if (req.body.isDelivered && !order.deliveredAt) {
+      order.deliveredAt = Date.now();
+    }
+
+    const updatedOrder = await order.save();
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    console.error('Update order status error:', error);
+    res.status(500).json({ message: 'Server error while updating order status' });
+  }
+};
+
+// @desc    Get orders by user ID (admin only)
+// @route   GET /api/admin/users/:id/orders
+// @access  Private/Admin
+export const getOrdersByUserId = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.params.id });
+    
+    if (!orders) {
+      return res.status(404).json({ message: 'No orders found for this user' });
+    }
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Get orders by user ID error:', error);
+    res.status(500).json({ message: 'Server error while retrieving user orders' });
+  }
+};

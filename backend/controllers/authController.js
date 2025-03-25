@@ -181,3 +181,82 @@ export const updateUserProfile = async (req, res) => {
     return res.status(500).json({ message: 'Server error while updating profile' });
   }
 };
+
+// @desc    Get all users (admin only)
+// @route   GET /api/admin/users
+// @access  Private/Admin
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select('-password');
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ message: 'Server error while retrieving users' });
+  }
+};
+
+// @desc    Get user by ID (admin only)
+// @route   GET /api/admin/users/:id
+// @access  Private/Admin
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Get user by ID error:', error);
+    res.status(500).json({ message: 'Server error while retrieving user' });
+  }
+};
+
+// @desc    Update user (admin only)
+// @route   PUT /api/admin/users/:id
+// @access  Private/Admin
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.isAdmin = req.body.isAdmin !== undefined ? req.body.isAdmin : user.isAdmin;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ message: 'Server error while updating user' });
+  }
+};
+
+// @desc    Delete user (admin only)
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await User.deleteOne({ _id: user._id });
+    res.status(200).json({ message: 'User removed' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Server error while deleting user' });
+  }
+};
