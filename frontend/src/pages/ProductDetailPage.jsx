@@ -119,11 +119,12 @@ const ProductDetailPage = () => {
         ) : product ? (
           <div className="flex flex-col md:flex-row -mx-4">
             <div className="md:flex-1 px-4 mb-8 md:mb-0">
-              <div className="h-[400px] rounded-lg bg-gray-100 mb-4 flex items-center justify-center">
+              <div className="text-center bg-gray-100 rounded-lg p-4 mb-4">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className="max-h-full max-w-full object-contain"
+                  className="inline-block w-auto max-w-full mx-auto"
+                  style={{ height: 'auto' }}
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = 'https://via.placeholder.com/600x400?text=VisionAssist';

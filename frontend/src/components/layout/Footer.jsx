@@ -37,30 +37,30 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link to="/about" className="text-gray-400 hover:text-white transition">About Us</Link></li>
-              <li><Link to="/careers" className="text-gray-400 hover:text-white transition">Careers</Link></li>
-              <li><Link to="/press" className="text-gray-400 hover:text-white transition">Press</Link></li>
-              <li><Link to="/blog" className="text-gray-400 hover:text-white transition">Blog</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">About Us</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Careers</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Press</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Blog</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><Link to="/contact" className="text-gray-400 hover:text-white transition">Contact Us</Link></li>
-              <li><Link to="/help" className="text-gray-400 hover:text-white transition">Help Center</Link></li>
-              <li><Link to="/faq" className="text-gray-400 hover:text-white transition">FAQs</Link></li>
-              <li><Link to="/warranty" className="text-gray-400 hover:text-white transition">Warranty</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Contact Us</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Help Center</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">FAQs</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Warranty</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><Link to="/privacy" className="text-gray-400 hover:text-white transition">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-gray-400 hover:text-white transition">Terms of Service</Link></li>
-              <li><Link to="/accessibility" className="text-gray-400 hover:text-white transition">Accessibility</Link></li>
-              <li><Link to="/cookies" className="text-gray-400 hover:text-white transition">Cookie Policy</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Privacy Policy</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Terms of Service</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Accessibility</Link></li>
+              <li><Link to="#" className="text-gray-400 hover:text-white transition">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>

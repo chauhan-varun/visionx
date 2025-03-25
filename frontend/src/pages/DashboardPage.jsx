@@ -120,7 +120,8 @@ const DashboardPage = () => {
 
       if (profileForm.currentPassword && profileForm.newPassword) {
         updateData.currentPassword = profileForm.currentPassword;
-        updateData.newPassword = profileForm.newPassword;
+        updateData.password = profileForm.newPassword;
+        updateData.confirmPassword = profileForm.confirmNewPassword;
       }
 
       await updateProfile(updateData);
@@ -530,48 +531,6 @@ const DashboardPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Accessibility Preferences</h3>
-                    <div className="bg-gray-50 p-4 rounded">
-                      <div className="mb-3">
-                        <label htmlFor="fontSize" className="block text-gray-700 mb-1">
-                          Text Size
-                        </label>
-                        <select
-                          id="fontSize"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          defaultValue="medium"
-                        >
-                          <option value="small">Small</option>
-                          <option value="medium">Medium</option>
-                          <option value="large">Large</option>
-                          <option value="x-large">Extra Large</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center mb-3">
-                        <input
-                          type="checkbox"
-                          id="highContrast"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="highContrast" className="ml-2 block text-gray-700">
-                          High contrast mode
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="screenReader"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="screenReader" className="ml-2 block text-gray-700">
-                          Optimize for screen readers
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
                   <div>
                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mr-2 transition">
                       Save Settings

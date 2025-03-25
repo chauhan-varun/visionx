@@ -126,7 +126,7 @@ export const getUserProfile = async (req, res) => {
 // @access  Private
 export const updateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -144,11 +144,28 @@ export const updateUserProfile = async (req, res) => {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
     
-    // Only update password if provided
+    // Handle password update with verification
     if (req.body.password) {
+      // Verify current password if attempting to change password
+      if (!req.body.currentPassword) {
+        return res.status(400).json({ message: 'Current password is required to set a new password' });
+      }
+      
+      const isMatch = await user.comparePassword(req.body.currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Current password is incorrect' });
+      }
+      
+      // Validate new password
       if (req.body.password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters long' });
       }
+      
+      // Confirm new password matches confirmation
+      if (req.body.password !== req.body.confirmPassword) {
+        return res.status(400).json({ message: 'New password and confirmation do not match' });
+      }
+      
       user.password = req.body.password;
     }
 
