@@ -27,7 +27,6 @@ export const createOrder = async (req, res) => {
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   } catch (error) {
-    console.error('Create order error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -48,7 +47,6 @@ export const getOrderById = async (req, res) => {
       res.status(404).json({ message: 'Order not found' });
     }
   } catch (error) {
-    console.error('Get order error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -76,7 +74,6 @@ export const updateOrderToPaid = async (req, res) => {
       res.status(404).json({ message: 'Order not found' });
     }
   } catch (error) {
-    console.error('Update order paid error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -89,7 +86,6 @@ export const getMyOrders = async (req, res) => {
     const orders = await Order.find({ user: req.user._id });
     res.json(orders);
   } catch (error) {
-    console.error('Get my orders error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -102,7 +98,6 @@ export const getOrders = async (req, res) => {
     const orders = await Order.find({}).populate('user', 'id name email');
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Get all orders error:', error);
     res.status(500).json({ message: 'Server error while retrieving orders' });
   }
 };
@@ -121,7 +116,6 @@ export const getOrderByIdAdmin = async (req, res) => {
 
     res.status(200).json(order);
   } catch (error) {
-    console.error('Get order by ID (admin) error:', error);
     res.status(500).json({ message: 'Server error while retrieving order' });
   }
 };
@@ -147,7 +141,6 @@ export const updateOrderStatus = async (req, res) => {
     const updatedOrder = await order.save();
     res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error('Update order status error:', error);
     res.status(500).json({ message: 'Server error while updating order status' });
   }
 };
@@ -165,7 +158,6 @@ export const getOrdersByUserId = async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Get orders by user ID error:', error);
     res.status(500).json({ message: 'Server error while retrieving user orders' });
   }
 };

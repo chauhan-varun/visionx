@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       // Handle potential JSON parse error
-      console.error('Error parsing user info:', err);
       localStorage.removeItem('userInfo'); // Remove invalid data
     } finally {
       setLoading(false);

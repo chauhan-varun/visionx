@@ -8,7 +8,6 @@ export const getProducts = async (req, res) => {
     const products = await Product.find({});
     res.json(products);
   } catch (error) {
-    console.error('Get products error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -26,7 +25,6 @@ export const getProductById = async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (error) {
-    console.error('Get product error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -50,7 +48,6 @@ export const createProduct = async (req, res) => {
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
   } catch (error) {
-    console.error('Create product error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -78,7 +75,6 @@ export const updateProduct = async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (error) {
-    console.error('Update product error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -97,7 +93,6 @@ export const deleteProduct = async (req, res) => {
       res.status(404).json({ message: 'Product not found' });
     }
   } catch (error) {
-    console.error('Delete product error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

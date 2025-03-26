@@ -1,434 +1,251 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  RiSearchLine, 
-  RiFilter2Line, 
-  RiArrowRightSLine,
-  RiAddLine,
-  RiMoreLine,
-  RiDeleteBinLine,
-  RiEdit2Line,
-  RiMailLine,
-  RiCloseLine
-} from 'react-icons/ri';
-import api from '../api/apiClient';
+import { useNavigate } from 'react-router-dom';
+import { SyncLoader } from 'react-spinners';
+import { motion } from 'framer-motion';
+import AdminLayout from '../components/AdminLayout';
+import { getUsers } from '../utils/api';
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [showActionMenu, setShowActionMenu] = useState(null);
-
-  const usersPerPage = 10;
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        
-        // Fetch real user data from the backend API
-        const { data } = await api.get('/admin/users');
-        
+        setError(null);
+        const data = await getUsers();
         setUsers(data);
-        setFilteredUsers(data);
-        setTotalPages(Math.ceil(data.length / usersPerPage));
-      } catch (error) {
-        console.error('Error fetching users:', error);
+      } catch (err) {
+        // The authentication errors are already handled in the api utility
+        if (err.message.includes('Authentication failed')) {
+          // The api utility will redirect to login
+          return;
+        }
+        
+        setError(err.message || 'Failed to load users');
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [navigate]);
 
-  useEffect(() => {
-    let result = [...users];
-    
-    // Apply search filter
-    if (searchQuery) {
-      result = result.filter(
-        user => 
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    // Apply status filter
-    if (activeFilter !== 'all') {
-      result = result.filter(user => {
-        if (activeFilter === 'admin') return user.isAdmin;
-        if (activeFilter === 'active') return user.status === 'active';
-        if (activeFilter === 'inactive') return user.status === 'inactive';
-        return true;
-      });
-    }
-    
-    setFilteredUsers(result);
-    setTotalPages(Math.ceil(result.length / usersPerPage));
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [searchQuery, activeFilter, users]);
-
-  const getCurrentPageData = () => {
-    const startIndex = (currentPage - 1) * usersPerPage;
-    const endIndex = startIndex + usersPerPage;
-    return filteredUsers.slice(startIndex, endIndex);
-  };
-
+  // Format date in a more readable way
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }).format(date);
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleViewUser = (userId) => {
+    navigate(`/users/${userId}`);
   };
 
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
+  const handleViewOrders = (userId) => {
+    navigate(`/users/${userId}/orders`);
   };
 
-  const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-    setShowFilters(false);
-  };
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center items-center h-64">
+          <SyncLoader color="#3B82F6" size={15} margin={6} />
+        </div>
+      </AdminLayout>
+    );
+  }
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const toggleUserSelection = (userId) => {
-    setSelectedUsers(prev => {
-      if (prev.includes(userId)) {
-        return prev.filter(id => id !== userId);
-      } else {
-        return [...prev, userId];
-      }
-    });
-  };
-
-  const toggleAllSelection = () => {
-    if (selectedUsers.length === getCurrentPageData().length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(getCurrentPageData().map(user => user._id));
-    }
-  };
-
-  const toggleActionMenu = (userId) => {
-    setShowActionMenu(prev => prev === userId ? null : userId);
-  };
-
-  const handleBulkAction = (action) => {
-    if (action === 'delete') {
-      console.log('Deleting users:', selectedUsers);
-      // Implement delete logic
-      alert(`${selectedUsers.length} users would be deleted`);
-    }
-    setSelectedUsers([]);
-  };
+  if (error) {
+    return (
+      <AdminLayout>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" 
+          role="alert"
+        >
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{error}</span>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 transition duration-300 ease-in-out"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </motion.button>
+        </motion.div>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-semibold text-text">Users</h1>
-        
-        <div className="flex space-x-2">
-          {selectedUsers.length > 0 && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-text-secondary">
-                {selectedUsers.length} selected
-              </span>
-              <button 
-                className="bg-error text-white px-3 py-1.5 rounded-lg text-sm flex items-center hover:bg-red-600 transition-colors"
-                onClick={() => handleBulkAction('delete')}
-              >
-                <RiDeleteBinLine className="mr-1" /> Delete
-              </button>
-              <button 
-                className="text-text-secondary hover:text-text px-2 py-1.5 text-sm"
-                onClick={() => setSelectedUsers([])}
-              >
-                <RiCloseLine className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-          
-          <button className="btn-apple px-4 py-2 text-sm flex items-center">
-            <RiAddLine className="mr-2" /> Add User
-          </button>
+    <AdminLayout>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Users</h1>
+          <p className="text-gray-600">Manage registered users</p>
         </div>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow">
-          <RiSearchLine className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" />
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="pl-10 pr-4 py-2 border border-border rounded-lg w-full focus:ring-1 focus:ring-accent focus:border-accent text-sm"
-          />
-        </div>
-        
-        <div className="relative">
-          <button 
-            onClick={toggleFilters}
-            className="px-4 py-2 border border-border rounded-lg flex items-center text-sm hover:border-text-secondary transition-colors"
-          >
-            <RiFilter2Line className="mr-2" />
-            {activeFilter === 'all' ? 'All Users' : 
-              activeFilter === 'admin' ? 'Admins' : 
-              activeFilter === 'active' ? 'Active' : 'Inactive'}
-          </button>
-          
-          {showFilters && (
-            <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-apple z-10 border border-border">
-              <button 
-                className={`px-4 py-2 text-sm w-full text-left hover:bg-gray-50 ${activeFilter === 'all' ? 'text-accent' : 'text-text'}`}
-                onClick={() => handleFilterChange('all')}
-              >
-                All Users
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm w-full text-left hover:bg-gray-50 ${activeFilter === 'admin' ? 'text-accent' : 'text-text'}`}
-                onClick={() => handleFilterChange('admin')}
-              >
-                Admins
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm w-full text-left hover:bg-gray-50 ${activeFilter === 'active' ? 'text-accent' : 'text-text'}`}
-                onClick={() => handleFilterChange('active')}
-              >
-                Active
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm w-full text-left hover:bg-gray-50 ${activeFilter === 'inactive' ? 'text-accent' : 'text-text'}`}
-                onClick={() => handleFilterChange('inactive')}
-              >
-                Inactive
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-4 space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="animate-pulse flex items-center space-x-4 py-3">
-                <div className="h-4 w-4 bg-gray-200 rounded"></div>
-                <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
-                <div className="flex-1 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-                <div className="h-8 bg-gray-200 rounded w-24"></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="apple-table">
-                <thead>
-                  <tr>
-                    <th className="w-10">
-                      <input
-                        type="checkbox"
-                        className="rounded text-accent focus:ring-accent border-gray-300"
-                        checked={selectedUsers.length > 0 && selectedUsers.length === getCurrentPageData().length}
-                        onChange={toggleAllSelection}
-                      />
-                    </th>
-                    <th>User</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th>Joined</th>
-                    <th>Last Login</th>
-                    <th>Orders</th>
-                    <th className="w-20"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getCurrentPageData().length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="text-center py-10 text-text-secondary">
-                        No users found matching your criteria
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white rounded-lg shadow-md overflow-hidden"
+          whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
+        >
+          {/* Desktop view - Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Admin
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Joined Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.length > 0 ? (
+                  users.map((user, index) => (
+                    <motion.tr 
+                      key={user._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user._id.substring(0, 8)}...
                       </td>
-                    </tr>
-                  ) : (
-                    getCurrentPageData().map((user, index) => (
-                      <tr key={user._id} className="stagger-item">
-                        <td>
-                          <input
-                            type="checkbox"
-                            className="rounded text-accent focus:ring-accent border-gray-300"
-                            checked={selectedUsers.includes(user._id)}
-                            onChange={() => toggleUserSelection(user._id)}
-                          />
-                        </td>
-                        <td>
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-accent to-accent-hover flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                              {user.name.split(' ').map(name => name[0]).join('')}
-                            </div>
-                            <div className="ml-3">
-                              <Link to={`/users/${user._id}`} className="font-medium text-text hover:text-accent">
-                                {user.name}
-                              </Link>
-                              <div className="text-text-secondary text-xs flex items-center">
-                                <RiMailLine className="mr-1" />
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${user.status === 'active' ? 'success' : 'error'}`}>
-                            {user.status === 'active' ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`text-sm ${user.isAdmin ? 'font-medium text-accent' : 'text-text-secondary'}`}>
-                            {user.isAdmin ? 'Admin' : 'Customer'}
-                          </span>
-                        </td>
-                        <td className="text-sm text-text-secondary">
-                          {formatDate(user.createdAt)}
-                        </td>
-                        <td className="text-sm text-text-secondary">
-                          {formatDate(user.lastLogin)}
-                        </td>
-                        <td className="text-sm font-medium text-text">
-                          {user.ordersCount}
-                        </td>
-                        <td>
-                          <div className="relative">
-                            <button 
-                              onClick={() => toggleActionMenu(user._id)}
-                              className="p-2 text-text-secondary hover:text-text rounded-full hover:bg-gray-50 focus:outline-none"
-                            >
-                              <RiMoreLine className="w-5 h-5" />
-                            </button>
-                            
-                            {showActionMenu === user._id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-apple z-10 border border-border">
-                                <Link 
-                                  to={`/users/${user._id}`} 
-                                  className="block px-4 py-2 text-sm text-text hover:bg-gray-50 w-full text-left flex items-center"
-                                >
-                                  <RiArrowRightSLine className="mr-2" /> View Details
-                                </Link>
-                                <button 
-                                  className="block px-4 py-2 text-sm text-text hover:bg-gray-50 w-full text-left flex items-center"
-                                >
-                                  <RiEdit2Line className="mr-2" /> Edit User
-                                </button>
-                                <button 
-                                  className="block px-4 py-2 text-sm text-error hover:bg-gray-50 w-full text-left flex items-center"
-                                >
-                                  <RiDeleteBinLine className="mr-2" /> Delete User
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-            
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-border">
-                <div className="text-sm text-text-secondary">
-                  Showing {(currentPage - 1) * usersPerPage + 1} to {Math.min(currentPage * usersPerPage, filteredUsers.length)} of {filteredUsers.length} users
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      currentPage === 1 
-                        ? 'text-text-secondary cursor-not-allowed' 
-                        : 'text-text hover:bg-gray-100'
-                    }`}
-                  >
-                    Previous
-                  </button>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.isAdmin ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {user.isAdmin ? 'Yes' : 'No'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(user.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <motion.button
+                          whileHover={{ scale: 1.05, color: '#1E40AF' }}
+                          onClick={() => handleViewUser(user._id)}
+                          className="text-blue-600 hover:text-blue-900 mr-3 transition duration-300 ease-in-out"
+                        >
+                          View
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05, color: '#15803D' }}
+                          onClick={() => handleViewOrders(user._id)}
+                          className="text-green-600 hover:text-green-900 transition duration-300 ease-in-out"
+                        >
+                          Orders
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                      No users found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile view - Cards */}
+          <div className="md:hidden p-4 space-y-4">
+            {users.length > 0 ? (
+              users.map((user, index) => (
+                <motion.div
+                  key={user._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="bg-gray-50 rounded-lg p-4 shadow-sm"
+                  whileHover={{ boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">{user.name}</h3>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+                      user.isAdmin ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {user.isAdmin ? 'Admin' : 'User'}
+                    </span>
+                  </div>
                   
-                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                    let pageNum = i + 1;
-                    
-                    // For many pages, show pagination like: 1 ... 4 5 6 ... 20
-                    if (totalPages > 5) {
-                      if (currentPage <= 3) {
-                        pageNum = i + 1;
-                        if (i === 4) pageNum = totalPages;
-                        if (i === 3 && totalPages > 5) pageNum = '...';
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                        if (i === 0) pageNum = 1;
-                        if (i === 1 && totalPages > 5) pageNum = '...';
-                      } else {
-                        if (i === 0) pageNum = 1;
-                        else if (i === 1) pageNum = '...';
-                        else if (i === 3) pageNum = '...';
-                        else if (i === 4) pageNum = totalPages;
-                        else pageNum = currentPage;
-                      }
-                    }
-                    
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => typeof pageNum === 'number' && handlePageChange(pageNum)}
-                        disabled={pageNum === '...'}
-                        className={`px-3 py-1 rounded-md text-sm ${
-                          pageNum === currentPage
-                            ? 'bg-accent text-white'
-                            : pageNum === '...'
-                              ? 'text-text-secondary cursor-default'
-                              : 'text-text hover:bg-gray-100'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                  <div className="mt-2 mb-3">
+                    <p className="text-xs text-gray-500">
+                      <span className="font-medium">ID:</span> {user._id.substring(0, 10)}...
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      <span className="font-medium">Joined:</span> {formatDate(user.createdAt)}
+                    </p>
+                  </div>
                   
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      currentPage === totalPages
-                        ? 'text-text-secondary cursor-not-allowed'
-                        : 'text-text hover:bg-gray-100'
-                    }`}
-                  >
-                    Next
-                  </button>
-                </div>
+                  <div className="flex justify-between mt-3 pt-3 border-t border-gray-200">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleViewUser(user._id)}
+                      className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition duration-300"
+                    >
+                      View Details
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleViewOrders(user._id)}
+                      className="bg-green-600 text-white text-xs px-3 py-1.5 rounded hover:bg-green-700 transition duration-300"
+                    >
+                      View Orders
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                No users found
               </div>
             )}
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AdminLayout>
   );
 };
 

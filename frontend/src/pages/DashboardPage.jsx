@@ -41,7 +41,6 @@ const DashboardPage = () => {
       const { data } = await api.get('/orders/myorders');
       setOrders(data);
     } catch (err) {
-      console.error('Error fetching orders:', err);
       // Set dummy orders for display purposes
       setOrders([
         {

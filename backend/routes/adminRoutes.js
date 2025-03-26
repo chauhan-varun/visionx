@@ -11,9 +11,13 @@ import {
   updateOrderStatus,
   getOrdersByUserId,
 } from '../controllers/orderController.js';
+import { getDashboardStats } from '../controllers/dashboardController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Dashboard route (admin only)
+router.route('/dashboard').get(protect, admin, getDashboardStats);
 
 // User routes (admin only)
 router.route('/users').get(protect, admin, getUsers);

@@ -44,7 +44,6 @@ const OrderSuccessPage = () => {
         setOrder(data);
         setError(null);
       } catch (err) {
-        console.error('Error fetching order:', err);
         setError(
           err.response && err.response.data.message
             ? err.response.data.message

@@ -93,7 +93,6 @@ const CheckoutPage = () => {
       
       // We don't need the fallback navigation anymore as we're handling navigation properly
     } catch (err) {
-      console.error('Order error:', err);
       // Show error toast notification
       toast.error(
         err.response && err.response.data.message

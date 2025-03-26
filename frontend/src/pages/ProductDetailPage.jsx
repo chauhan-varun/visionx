@@ -54,7 +54,6 @@ const ProductDetailPage = () => {
           throw new Error('Invalid product ID');
         }
       } catch (err) {
-        console.error('Error fetching product:', err);
         const errorMessage = err.response && err.response.data.message
           ? err.response.data.message
           : 'Could not load product details. Please try again.';

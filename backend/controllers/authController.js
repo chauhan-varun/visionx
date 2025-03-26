@@ -56,7 +56,6 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    console.error('Register error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
@@ -93,7 +92,6 @@ export const loginUser = async (req, res) => {
     const token = generateToken(user._id);
     return res.status(200).json(formatUserResponse(user, token));
   } catch (error) {
-    console.error('Login error:', error);
     return res.status(500).json({ message: 'Server error during login' });
   }
 };
@@ -116,7 +114,6 @@ export const getUserProfile = async (req, res) => {
       isAdmin: user.isAdmin,
     });
   } catch (error) {
-    console.error('Profile error:', error);
     return res.status(500).json({ message: 'Server error while retrieving profile' });
   }
 };
@@ -174,7 +171,6 @@ export const updateUserProfile = async (req, res) => {
 
     return res.status(200).json(formatUserResponse(updatedUser, token));
   } catch (error) {
-    console.error('Update profile error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
@@ -190,7 +186,6 @@ export const getUsers = async (req, res) => {
     const users = await User.find({}).select('-password');
     res.status(200).json(users);
   } catch (error) {
-    console.error('Get all users error:', error);
     res.status(500).json({ message: 'Server error while retrieving users' });
   }
 };
@@ -208,7 +203,6 @@ export const getUserById = async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
-    console.error('Get user by ID error:', error);
     res.status(500).json({ message: 'Server error while retrieving user' });
   }
 };
@@ -237,7 +231,6 @@ export const updateUser = async (req, res) => {
       isAdmin: updatedUser.isAdmin,
     });
   } catch (error) {
-    console.error('Update user error:', error);
     res.status(500).json({ message: 'Server error while updating user' });
   }
 };
@@ -256,7 +249,6 @@ export const deleteUser = async (req, res) => {
     await User.deleteOne({ _id: user._id });
     res.status(200).json({ message: 'User removed' });
   } catch (error) {
-    console.error('Delete user error:', error);
     res.status(500).json({ message: 'Server error while deleting user' });
   }
 };

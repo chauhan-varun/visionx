@@ -1,435 +1,280 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  RiArrowRightLine, 
-  RiEyeLine, 
-  RiShoppingBag3Line, 
-  RiUserLine,
-  RiArrowUpLine,
-  RiArrowDownLine,
-  RiMoneyDollarCircleLine
-} from 'react-icons/ri';
-import { Line, Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import api from '../api/apiClient';
-
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import { useNavigate } from 'react-router-dom';
+import { SyncLoader } from 'react-spinners';
+import { motion } from 'framer-motion';
+import AdminLayout from '../components/AdminLayout';
+import { getDashboardStats } from '../utils/api';
 
 const DashboardPage = () => {
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    newUsers: 0,
-    recentOrders: []
-  });
-
-  // Chart options and data
-  const lineChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          boxWidth: 10,
-          usePointStyle: true,
-          pointStyle: 'circle'
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        titleColor: '#1d1d1f',
-        bodyColor: '#1d1d1f',
-        borderColor: '#d2d2d7',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 6,
-        usePointStyle: true,
-        callbacks: {
-          labelPointStyle: () => ({
-            pointStyle: 'circle',
-            rotation: 0
-          })
-        }
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false
-        },
-        ticks: {
-          color: '#86868b'
-        }
-      },
-      y: {
-        grid: {
-          color: 'rgba(210, 210, 215, 0.3)'
-        },
-        ticks: {
-          color: '#86868b'
-        }
-      }
-    },
-    elements: {
-      line: {
-        tension: 0.4
-      },
-      point: {
-        radius: 4,
-        hoverRadius: 6
-      }
-    }
-  };
-
-  const lineChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [18, 25, 21, 35, 41, 37, 56],
-        borderColor: '#0071e3',
-        backgroundColor: 'rgba(0, 113, 227, 0.1)',
-        fill: 'origin'
-      },
-      {
-        label: 'Users',
-        data: [12, 19, 25, 29, 32, 35, 40],
-        borderColor: '#5ac8fa',
-        backgroundColor: 'rgba(90, 200, 250, 0.1)',
-        fill: 'origin'
-      }
-    ]
-  };
-
-  const doughnutChartData = {
-    labels: ['VisionAssist Pro', 'Vision Lens Kit', 'Extended Warranty'],
-    datasets: [
-      {
-        data: [65, 20, 15],
-        backgroundColor: ['#0071e3', '#5ac8fa', '#34c759'],
-        borderColor: ['#ffffff', '#ffffff', '#ffffff'],
-        borderWidth: 2
-      }
-    ]
-  };
-
-  const doughnutChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'right',
-        labels: {
-          boxWidth: 10,
-          usePointStyle: true,
-          pointStyle: 'circle'
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        titleColor: '#1d1d1f',
-        bodyColor: '#1d1d1f',
-        borderColor: '#d2d2d7',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 6
-      }
-    },
-    cutout: '70%'
-  };
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        const data = await getDashboardStats();
+        setStats(data);
+      } catch (err) {
+        // Handle authentication errors (already managed in api.js)
+        if (err.message.includes('Authentication failed')) {
+          // The api utility will redirect to login
+          return;
+        }
         
-        // In a real scenario, you would fetch actual data from your API
-        // const { data } = await api.get('/admin/dashboard');
-        // setStats(data);
-        
-        // Simulated data for demonstration
-        setStats({
-          totalUsers: 248,
-          totalOrders: 159,
-          totalRevenue: 259845.99,
-          newUsers: 24,
-          recentOrders: [
-            {
-              _id: 'ord12345',
-              user: {
-                _id: 'usr123',
-                name: 'John Doe'
-              },
-              totalPrice: 1299.99,
-              isPaid: true,
-              createdAt: '2025-03-22T10:30:00.000Z',
-              status: 'Delivered'
-            },
-            {
-              _id: 'ord12346',
-              user: {
-                _id: 'usr124',
-                name: 'Jane Smith'
-              },
-              totalPrice: 1449.98,
-              isPaid: true,
-              createdAt: '2025-03-23T14:45:00.000Z',
-              status: 'Processing'
-            },
-            {
-              _id: 'ord12347',
-              user: {
-                _id: 'usr125',
-                name: 'Mike Johnson'
-              },
-              totalPrice: 99.99,
-              isPaid: true,
-              createdAt: '2025-03-24T09:15:00.000Z',
-              status: 'Shipped'
-            },
-            {
-              _id: 'ord12348',
-              user: {
-                _id: 'usr126',
-                name: 'Sarah Williams'
-              },
-              totalPrice: 1299.99,
-              isPaid: false,
-              createdAt: '2025-03-25T11:20:00.000Z',
-              status: 'Pending Payment'
-            }
-          ]
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        setError(err.message || 'Failed to load dashboard data');
       } finally {
-        // Simulate loading for smoother animations
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
+        setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
+  // Format date in a more readable way
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }).format(date);
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  const StatCard = ({ title, value, icon, bgColor }) => (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
+      className={`${bgColor} p-6 rounded-lg shadow-md transition-all duration-300`}
+    >
+      <div className="flex items-center">
+        <div className="bg-white bg-opacity-25 p-3 rounded-full">
+          {icon}
+        </div>
+        <div className="ml-4">
+          <h3 className="text-white text-lg font-medium">{title}</h3>
+          <p className="text-white text-2xl font-bold">{value}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center items-center h-64">
+          <SyncLoader color="#3B82F6" size={15} margin={6} />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" 
+          role="alert"
+        >
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{error}</span>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 transition duration-300 ease-in-out"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </motion.button>
+        </motion.div>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-text">Dashboard</h1>
-      
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="stat-card h-32">
-              <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="h-8 bg-gray-200 rounded w-2/3 mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          ))}
+    <AdminLayout>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600">Welcome to the VisionX admin dashboard</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="stat-card stagger-item">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-text-secondary text-sm font-medium">Total Users</span>
-              <div className="p-2 bg-blue-50 rounded-full">
-                <RiUserLine className="h-5 w-5 text-accent" />
-              </div>
+
+        {stats ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+              <StatCard
+                title="Total Users"
+                value={stats.userCount || 0}
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                }
+                bgColor="bg-blue-600"
+              />
+              <StatCard
+                title="Total Orders"
+                value={stats.orderCount || 0}
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                }
+                bgColor="bg-green-600"
+              />
+              <StatCard
+                title="Revenue"
+                value={`₹${(stats.totalRevenue || 0).toFixed(2)}`}
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                bgColor="bg-purple-600"
+              />
+              <StatCard
+                title="Pending Orders"
+                value={stats.pendingOrders || 0}
+                icon={
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                }
+                bgColor="bg-orange-600"
+              />
             </div>
-            <h3 className="text-2xl font-semibold text-text mb-1">{stats.totalUsers}</h3>
-            <div className="flex items-center text-sm">
-              <RiArrowUpLine className="mr-1 text-success" />
-              <span className="text-success">+{stats.newUsers}</span>
-              <span className="text-text-secondary ml-2">since last month</span>
-            </div>
-          </div>
-          
-          <div className="stat-card stagger-item">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-text-secondary text-sm font-medium">Total Orders</span>
-              <div className="p-2 bg-indigo-50 rounded-full">
-                <RiShoppingBag3Line className="h-5 w-5 text-indigo-500" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-semibold text-text mb-1">{stats.totalOrders}</h3>
-            <div className="flex items-center text-sm">
-              <RiArrowUpLine className="mr-1 text-success" />
-              <span className="text-success">+12.5%</span>
-              <span className="text-text-secondary ml-2">since last month</span>
-            </div>
-          </div>
-          
-          <div className="stat-card stagger-item">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-text-secondary text-sm font-medium">Total Revenue</span>
-              <div className="p-2 bg-green-50 rounded-full">
-                <RiMoneyDollarCircleLine className="h-5 w-5 text-success" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-semibold text-text mb-1">{formatCurrency(stats.totalRevenue)}</h3>
-            <div className="flex items-center text-sm">
-              <RiArrowUpLine className="mr-1 text-success" />
-              <span className="text-success">+18.2%</span>
-              <span className="text-text-secondary ml-2">since last month</span>
-            </div>
-          </div>
-          
-          <div className="stat-card stagger-item">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-text-secondary text-sm font-medium">Page Views</span>
-              <div className="p-2 bg-amber-50 rounded-full">
-                <RiEyeLine className="h-5 w-5 text-amber-500" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-semibold text-text mb-1">24,562</h3>
-            <div className="flex items-center text-sm">
-              <RiArrowDownLine className="mr-1 text-error" />
-              <span className="text-error">-3.6%</span>
-              <span className="text-text-secondary ml-2">since last month</span>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm p-6 h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-text">Sales Analytics</h3>
-              <div className="bg-gray-100 rounded-md text-sm">
-                <select className="bg-transparent px-3 py-1 border-none focus:ring-0 text-text-secondary">
-                  <option>Last 7 days</option>
-                  <option>Last 30 days</option>
-                  <option>Last 90 days</option>
-                </select>
-              </div>
-            </div>
-            {loading ? (
-              <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
-            ) : (
-              <div className="animate-fade-in">
-                <Line options={lineChartOptions} data={lineChartData} height={120} />
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div>
-          <div className="bg-white rounded-lg shadow-sm p-6 h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-text">Product Distribution</h3>
-            </div>
-            
-            {loading ? (
-              <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
-            ) : (
-              <div className="animate-fade-in">
-                <Doughnut options={doughnutChartOptions} data={doughnutChartData} />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-text">Recent Orders</h3>
-          <Link 
-            to="/orders"
-            className="text-accent hover:text-accent-hover text-sm font-medium flex items-center"
-          >
-            View All <RiArrowRightLine className="ml-1" />
-          </Link>
-        </div>
-        
-        {loading ? (
-          <div className="space-y-4 animate-pulse">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-lg"></div>
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="apple-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Customer</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recentOrders.map((order, index) => (
-                  <tr key={order._id} className={`stagger-item`}>
-                    <td className="font-medium">#{order._id}</td>
-                    <td>{order.user.name}</td>
-                    <td>{formatDate(order.createdAt)}</td>
-                    <td>{formatCurrency(order.totalPrice)}</td>
-                    <td>
-                      <span className={`status-badge ${
-                        order.status === 'Delivered' ? 'success' :
-                        order.status === 'Pending Payment' ? 'error' : 'pending'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td>
-                      <Link
-                        to={`/orders/${order._id}`}
-                        className="text-accent hover:text-accent-hover text-sm font-medium"
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-white rounded-lg shadow-md p-6 mb-6"
+              whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
+            >
+              <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
+              {stats.recentOrders && stats.recentOrders.length > 0 ? (
+                <>
+                  {/* Desktop view - Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stats.recentOrders.map((order, index) => (
+                          <motion.tr 
+                            key={order._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.5 + (index * 0.05) }}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order._id.substring(0, 8)}...</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.user?.name || 'N/A'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {formatDate(order.createdAt)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{order.totalPrice?.toFixed(2)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                order.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {order.isPaid ? 'Paid' : 'Pending'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <motion.button
+                                whileHover={{ scale: 1.05, color: '#1E40AF' }}
+                                onClick={() => navigate(`/orders/${order._id}`)}
+                                className="text-blue-600 hover:text-blue-900 transition duration-300 ease-in-out"
+                              >
+                                View
+                              </motion.button>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Mobile view - Cards */}
+                  <div className="md:hidden space-y-4">
+                    {stats.recentOrders.map((order, index) => (
+                      <motion.div
+                        key={order._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.5 + (index * 0.05) }}
+                        className="bg-gray-50 rounded-lg p-3 shadow-sm"
+                        whileHover={{ 
+                          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)"
+                        }}
                       >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-900">#{order._id.substring(0, 8)}</h3>
+                            <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(`/orders/${order._id}`)}
+                            className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700 transition duration-300"
+                          >
+                            View
+                          </motion.button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                          <div>
+                            <p className="text-gray-500 font-medium">Customer</p>
+                            <p className="font-medium truncate">{order.user?.name || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 font-medium">Total</p>
+                            <p className="text-blue-600 font-bold">₹{order.totalPrice?.toFixed(2)}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-2">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            order.isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {order.isPaid ? 'Paid' : 'Pending'}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-gray-500 py-4">
+                  No recent orders found
+                </div>
+              )}
+            </motion.div>
+          </>
+        ) : (
+          <div className="text-center text-gray-500 py-4">
+            No dashboard data available
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </AdminLayout>
   );
 };
 
