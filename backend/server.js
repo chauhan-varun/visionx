@@ -33,7 +33,39 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(morgan('dev'));
+
+// Custom Morgan logging - skip 304 responses to reduce terminal noise
+app.use(morgan('dev', {
+  skip: function (req, res) { 
+    // Skip logging for 304 Not Modified responses
+    return res.statusCode === 304;
+  }
+}));
+
+// Add a basic request counter for API monitoring
+const requestCounts = {
+  dashboard: 0,
+  users: 0,
+  orders: 0
+};
+
+// Optional middleware to log only unique API calls (uncomment if preferred)
+/*
+app.use((req, res, next) => {
+  // Only log the first request to each endpoint per server session
+  if (req.path.includes('/api/admin/dashboard') && requestCounts.dashboard === 0) {
+    console.log(`First request to dashboard API`);
+    requestCounts.dashboard++;
+  } else if (req.path.includes('/api/admin/users') && requestCounts.users === 0) {
+    console.log(`First request to users API`);
+    requestCounts.users++;
+  } else if (req.path.includes('/api/admin/orders') && requestCounts.orders === 0) {
+    console.log(`First request to orders API`);
+    requestCounts.orders++;
+  }
+  next();
+});
+*/
 
 // Routes
 app.use('/api/auth', authRoutes);
